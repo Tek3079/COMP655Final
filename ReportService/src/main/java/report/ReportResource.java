@@ -16,7 +16,7 @@ import org.jboss.resteasy.reactive.RestPath;
 public class ReportResource {
 
     @GET
-    @Produces(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Get all orders", description = "Retrieves all orders in the system")
     public Response getAllOrders() {
         return Response.ok(Order.findAllOrders()).build();
@@ -24,7 +24,7 @@ public class ReportResource {
 
     @GET
     @Path("/{id}")
-    @Produces(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Get orders by order id", description = "Retrieves the order by its id")
     public Response getOrderById(@RestPath Long id) {
         Order order = Order.findOrderById(id);

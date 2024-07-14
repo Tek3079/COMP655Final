@@ -1,7 +1,7 @@
 package report;
 
 import java.util.List;
-import java.time.LocalTime;
+import java.time.LocalDateTime;
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.*;
@@ -46,7 +46,7 @@ public class Order extends PanacheEntity {
     public Integer productId;
 
     @Column(name="time")
-    public LocalTime orderTime;
+    public LocalDateTime orderTime;
 
     @Column(name="amount")
     @NotBlank(message="Amount may not be blank")
@@ -91,6 +91,6 @@ public class Order extends PanacheEntity {
     }
 
     public void setTimeToNow() {
-        this.orderTime = LocalTime.now();;
+        this.orderTime = LocalDateTime.now();;
     }
 }

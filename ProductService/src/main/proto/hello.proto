@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "Group4";
+
+package product;
+
+message Product{
+    int64 id = 1;
+    string name = 2;
+    int64 quantity = 3;
+    float price = 4;
+}
+
+service ProductService{
+    rpc randomProduct(GetRandomProductRequest) returns (Product) {};
+    rpc updateProduct(Product) returns (UpdateProductResponse) {};
+}
+
+message GetRandomProductRequest{
+    int64 id = 1;
+}
+
+
+message UpdateProductResponse{
+    bool success = 1;
+}

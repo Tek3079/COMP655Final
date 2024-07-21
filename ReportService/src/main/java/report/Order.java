@@ -15,9 +15,11 @@ import jakarta.validation.constraints.NotNull;
 
 /**
  * Example JPA entity defined as a Panache Entity.
- * An ID field of Long type is provided, if you want to define your own ID field extends <code>PanacheEntityBase</code> instead.
+ * An ID field of Long type is provided, if you want to define your own ID field
+ * extends <code>PanacheEntityBase</code> instead.
  *
- * This uses the active record pattern, you can also use the repository pattern instead:
+ * This uses the active record pattern, you can also use the repository pattern
+ * instead:
  * .
  *
  * Usage (more example on the documentation)
@@ -29,30 +31,38 @@ import jakarta.validation.constraints.NotNull;
  *         entity1.persist();
  *
  *         List<MyEntity> entities = MyEntity.listAll();
- *     }
+ * }
  * }
  */
 
-@Table(name="orders", schema="public")
+@Table(name = "orders", schema = "public")
 @Entity(name = "orders")
 public class Order extends PanacheEntity {
 
-    @Column(name="customer_id")
-    @NotBlank(message="Customer Id may not be blank")
+    @Column(name = "customer_id")
+    @NotBlank(message = "Customer Id may not be blank")
     public Integer customerId;
 
-    @Column(name="product_id")
-    @NotBlank(message="Product Id may not be blank")
+    @Column(name = "product_id")
+    @NotBlank(message = "Product Id may not be blank")
     public Integer productId;
 
-    @Column(name="time")
+    @Column(name = "time")
     public LocalDateTime orderTime;
 
-    @Column(name="amount")
-    @NotBlank(message="Amount may not be blank")
+    @Column(name = "amount")
+    @NotBlank(message = "Amount may not be blank")
     public float amount;
 
-    public Order(){};
+    public Order() {
+    };
+
+    public Order(Integer customerId, Integer productId, float amount) {
+        this.customerId = customerId;
+        this.productId = productId;
+        this.amount = amount;
+        this.orderTime = LocalDateTime.now();
+    }
 
     /**
      * Create an Order in the database. .
@@ -66,7 +76,9 @@ public class Order extends PanacheEntity {
     }
 
     /**
-     * Find a Order by the order's ID in the database. ID is a primary key, so there can only be 1 result.
+     * Find a Order by the order's ID in the database. ID is a primary key, so there
+     * can only be 1 result.
+     * 
      * @param id The ID of the order
      * @return The order containing the ID in the param
      */
@@ -76,6 +88,7 @@ public class Order extends PanacheEntity {
 
     /**
      * A method to return all the orders in the psql database.
+     * 
      * @return a List of Orders that are in the database
      */
     public static List<Order> findAllOrders() {
@@ -83,7 +96,9 @@ public class Order extends PanacheEntity {
     }
 
     /**
-     * A method that deletes a order in the database by the id of the order. It takes an ID and deletes the order.
+     * A method that deletes a order in the database by the id of the order. It
+     * takes an ID and deletes the order.
+     * 
      * @param id The id of the order in the database
      */
     public static void deleteOrder(Long id) {
@@ -91,6 +106,7 @@ public class Order extends PanacheEntity {
     }
 
     public void setTimeToNow() {
-        this.orderTime = LocalDateTime.now();;
+        this.orderTime = LocalDateTime.now();
+        ;
     }
 }

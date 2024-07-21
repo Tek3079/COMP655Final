@@ -9,7 +9,8 @@ import org.eclipse.microprofile.reactive.messaging.Outgoing;
 import io.smallrye.reactive.messaging.annotations.Blocking;
 
 /**
- * A bean consuming data from the "order-request" RabbitMQ queue and responding with whether the proper list.
+ * A bean consuming data from the "order-request" RabbitMQ queue and responding
+ * with whether the proper list.
  * The result is pushed to the "order-response" RabbitMQ exchange.
  */
 @ApplicationScoped
@@ -24,7 +25,7 @@ public class OrderProcessor {
     @Incoming("order-request")
     @Outgoing("order-response")
     @Blocking
-    public String processGpa40(JsonObject orderRequest) throws InterruptedException {
+    public String processOrderRequest(JsonObject orderRequest) throws InterruptedException {
 
         Order order = orderRequest.mapTo(Order.class);
         order.setTimeToNow();

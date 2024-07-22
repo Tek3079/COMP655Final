@@ -2,7 +2,7 @@ package report;
 
 import java.util.List;
 import java.time.LocalDateTime;
-import io.quarkus.hibernate.orm.panache.PanacheEntity;
+import io.quarkus.hibernate.reactive.panache.PanacheEntity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.*;
 import java.util.Random;
@@ -12,6 +12,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotNull;
+import io.smallrye.mutiny.Uni;
 
 /**
  * Example JPA entity defined as a Panache Entity.
@@ -64,16 +65,6 @@ public class Order extends PanacheEntity {
         this.orderTime = LocalDateTime.now();
     }
 
-    /**
-     * Create an Order in the database. .
-     *
-     * @param order A order
-     * @return The order that was created
-     */
-    public static Order persistOrder(@Valid Order order) {
-        order.persist();
-        return order;
-    }
 
     /**
      * Find a Order by the order's ID in the database. ID is a primary key, so there
@@ -82,7 +73,7 @@ public class Order extends PanacheEntity {
      * @param id The ID of the order
      * @return The order containing the ID in the param
      */
-    public static Order findOrderById(Long id) {
+    public static Uni<Order> findOrderById(Long id) {
         return find("id", id).firstResult();
     }
 
@@ -91,8 +82,8 @@ public class Order extends PanacheEntity {
      * 
      * @return a List of Orders that are in the database
      */
-    public static List<Order> findAllOrders() {
-        return Order.listAll(Sort.by("id"));
+    public static Uni<List<Order>> findAllOrders() {
+        return Order.listAll();
     }
 
     /**

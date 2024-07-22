@@ -1,12 +1,13 @@
 package report;
 
 import jakarta.enterprise.context.ApplicationScoped;
-
+import io.smallrye.mutiny.Uni;
+import io.quarkus.hibernate.reactive.panache.common.*;
+import jakarta.transaction.Transactional;
 import io.vertx.core.json.JsonObject;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 import org.eclipse.microprofile.reactive.messaging.Outgoing;
 
-import io.smallrye.reactive.messaging.annotations.Blocking;
 
 /**
  * A bean consuming data from the "order-request" RabbitMQ queue and responding
@@ -24,14 +25,15 @@ public class OrderProcessor {
      */
     @Incoming("order-request")
     @Outgoing("order-response")
-    @Blocking
+    @Transactional
     public String processOrderRequest(JsonObject orderRequest) throws InterruptedException {
 
         Order order = orderRequest.mapTo(Order.class);
         order.setTimeToNow();
-        Order createdOrder = Order.persistOrder(order);
+        order.persist();
+        order.flush();
 
-        return String.format("%s", createdOrder.id);
+        return String.format("%s", order.id);
     }
 
 }

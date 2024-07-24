@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<!-- saved from url=(0066)https://static.us.edusercontent.com/files/hpzP1ApGR12i7W8OPePCjcPj -->
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>Student Processing</title>
+
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="./Student_files/patternfly.min.css"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="./Student_files/patternfly-additions.min.css"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <div class="card">
+        <div class="card-body">
+          <h2 class="card-title">Order Board</h2>
+          <ul id="list"></ul>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      var source = new EventSource('/purchase/response');
+      source.onmessage = (event) => {
+        const newElement = document.createElement('li');
+        const eventList = document.getElementById('list');
+
+        newElement.textContent = `message: ${event.data}`;
+        eventList.appendChild(newElement);
+      };
+    </script>
+  </body>
+</html>

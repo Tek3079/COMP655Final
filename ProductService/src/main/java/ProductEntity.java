@@ -1,21 +1,30 @@
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.Column;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.util.List; // Importing List from java.util
 
-@Entity
+@Table(name = "products", schema = "public")
+@Entity(name = "products")
 @RegisterForReflection
 public class ProductEntity extends PanacheEntity {
 
+    @Column(name="name", nullable = false)
     @NotBlank(message = "name cannot be blank")
     public String name;
 
-    @NotNull
+    @Column(name="quantity", nullable = false)
+    @NotNull(message = "Quantity cannot be null")
+    @Min(message="Cannot be lower than 0", value = 0)
     public Integer quantity;
 
-    @NotNull
+    @Column(name="price", nullable = false)
+    @NotNull(message = "Price cannot be null")
+    @Min(message="Cannot be lower than 0", value = 0)
     public Float price;
 
     public String getName() {

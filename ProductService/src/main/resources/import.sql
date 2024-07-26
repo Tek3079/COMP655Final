@@ -1,11 +1,11 @@
-CREATE TABLE IF NOT EXISTS product (
+CREATE TABLE IF NOT EXISTS products (
     id SERIAL PRIMARY KEY,
     name VARCHAR NOT NULL,
     quantity INTEGER NOT NULL,
     price DOUBLE PRECISION NOT NULL,
 );
 
-insert into product(id, name, quantity, price)
+insert into products(id, name, quantity, price)
 values (1, 'laptop', 2, 1500.50),
 (2, 'iPhone', 4, 2000.00),
 (3, 'tv', 5, 500.0),

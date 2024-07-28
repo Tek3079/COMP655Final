@@ -1,122 +1,95 @@
-import java.net.URI;
-
-import org.eclipse.microprofile.openapi.annotations.tags.Tag;
-import org.jboss.resteasy.reactive.RestPath;
-
-import jakarta.transaction.Transactional;
+import io.smallrye.mutiny.Uni;
+import jakarta.inject.Inject;
 import jakarta.validation.Valid;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.DELETE;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.PUT;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
+import java.net.URI;
+
 @Path("/")
-@Tag(name = "Products", description="Operations on the product")
 public class ProductResource {
 
-    /*
-     * Get all the products and return it as JSON
-     */
+    @Inject
+    ProductInfoImpl productInfo;
+
     @Path("/products")
     @GET
-    @Transactional
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getProducts() {
-        return Response.ok(ProductEntity.findAllProducts()).build();
+    public Uni<Response> getProducts() {
+        return productInfo.getAllProducts()
+                .onItem().transform(products -> Response.ok(products).build());
     }
 
-    /*
-     * Create a new product in the database
-     */
     @Path("/product")
     @POST
-    @Transactional
+    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response createProduct(@Valid ProductEntity product) {
-        try {
-            ProductEntity.persistProduct(product);
-            return Response.created(URI.create("/product/id" + product.id)).entity(product).build();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return Response.status(Response.Status.BAD_REQUEST).entity("Validation Error").build();
-        }
+    public Uni<Response> createProduct(@Valid ProductEntity product) {
+        return productInfo.createProduct(product)
+                .onItem().transform(createdProduct -> {
+                    return Response.created(URI.create("/product/" + createdProduct.id)).entity(createdProduct).build();
+                })
+                .onFailure().recoverWithItem(e -> {
+                    e.printStackTrace();
+                    return Response.status(Response.Status.BAD_REQUEST).entity("Validation Error").build();
+                });
     }
 
-    /*
-     * Get product by ID and return JSON format
-     */
     @GET
     @Path("/product/{id}")
-    @Transactional
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getProductById(@RestPath Long id) {
-        ProductEntity product = ProductEntity.getProductById(id);
-        if(product != null) {
-            return Response.ok(product).build();
-        }
-        else {
-            return Response.status(Response.Status.NOT_FOUND).entity("Product with this ID not found").build();
-        }
+    public Uni<Response> getProductById(@PathParam("id") Long id) {
+        return productInfo.getProductById(id)
+                .onItem().transform(product -> {
+                    if (product != null) {
+                        return Response.ok(product).build();
+                    } else {
+                        return Response.status(Response.Status.NOT_FOUND).entity("Product with this ID not found").build();
+                    }
+                });
     }
 
-
-    /*
-     * Get a random product from the database and return JSON format
-     */
     @GET
     @Path("/product/random")
-    @Transactional
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getRandom() {
-        ProductEntity product = ProductEntity.findRandomProduct();
-        if(product != null) {
-            return Response.ok(product).build();
-        }
-        else {
-            return Response.status(Response.Status.NOT_FOUND).entity("Product with this ID not found").build();
-        }
+    public Uni<Response> getRandomProduct() {
+        return productInfo.getRandomProduct()
+                .onItem().transform(product -> {
+                    if (product != null) {
+                        return Response.ok(product).build();
+                    } else {
+                        return Response.status(Response.Status.NOT_FOUND).entity("No random product found").build();
+                    }
+                });
     }
 
-    /*
-     * Get product ID and new product detail
-     * Update the product with ID provided
-     */
     @PUT
     @Path("/product/{id}")
-    @Transactional
-    @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response updateProduct(@RestPath Long id, @Valid ProductEntity product) {
-        ProductEntity updatedProduct = ProductEntity.updateProduct(id, product);
-        if(product != null) {
-            return Response.ok(updatedProduct).build();
-        }
-        else {
-            return Response.status(Response.Status.NOT_FOUND).entity("Product with this ID not found").build();
-        }
+    @Produces(MediaType.APPLICATION_JSON)
+    public Uni<Response> updateProduct(@PathParam("id") Long id, @Valid ProductEntity product) {
+        return productInfo.updateProduct(id, product)
+                .onItem().transform(updatedProduct -> {
+                    if (updatedProduct != null) {
+                        return Response.ok(updatedProduct).build();
+                    } else {
+                        return Response.status(Response.Status.NOT_FOUND).entity("Product with this ID not found").build();
+                    }
+                });
     }
 
-
-    /*
-     * Delete the product with specified ID
-     */
     @DELETE
     @Path("/product/{id}")
-    @Transactional
     @Produces(MediaType.APPLICATION_JSON)
-    public Response deleteProduct(@RestPath Long id) {
-        ProductEntity product = ProductEntity.getProductById(id);
-        if(product != null) {
-            ProductEntity.deleteProduct(id);
-            return Response.noContent().build();
-        }
-        else {
-            return Response.status(Response.Status.NOT_FOUND).entity("Product with this ID not found").build();
-        }
+    public Uni<Response> deleteProduct(@PathParam("id") Long id) {
+        return productInfo.deleteProduct(id)
+                .onItem().transform(deleted -> {
+                    if (Boolean.TRUE.equals(deleted)) {
+                        return Response.noContent().build();
+                    } else {
+                        return Response.status(Response.Status.NOT_FOUND).entity("Product with this ID not found").build();
+                    }
+                });
     }
 }

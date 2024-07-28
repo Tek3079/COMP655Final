@@ -1,13 +1,22 @@
-import io.quarkus.hibernate.orm.panache.PanacheEntity;
+import io.quarkus.hibernate.reactive.panache.PanacheEntity;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.validation.Valid; 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import java.util.List; // Importing List from java.util
+import java.util.List;
+import io.smallrye.mutiny.Uni;
 
 @Entity
 @RegisterForReflection
 public class ProductEntity extends PanacheEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    public Long id;
 
     @NotBlank(message = "name cannot be blank")
     public String name;
@@ -18,6 +27,7 @@ public class ProductEntity extends PanacheEntity {
     @NotNull
     public Float price;
 
+    // Getter and Setter methods
     public String getName() {
         return name;
     }
@@ -42,35 +52,35 @@ public class ProductEntity extends PanacheEntity {
         this.price = price;
     }
 
-    public static List<ProductEntity> findAllProducts() {
+    public static Uni<List<ProductEntity>> findAllProducts() {
         return listAll();
     }
 
-    public static void persistProduct(ProductEntity product) {
-        product.persist();
+    public static Uni<Void> persistProduct(ProductEntity product) {
+        return product.persist().replaceWithVoid();
     }
 
-    public static ProductEntity getProductById(Long id) {
+    public static Uni<ProductEntity> getProductById(Long id) {
         return findById(id);
     }
 
-    public static ProductEntity findRandomProduct() {
+    public static Uni<ProductEntity> findRandomProduct() {
         return find("order by random()").firstResult();
     }
 
-    public static ProductEntity updateProduct(Long id, ProductEntity product) {
-        ProductEntity pro = findById(id);
-        if (pro != null) {
-            pro.name = product.name;
-            pro.quantity = product.quantity;
-            pro.price = product.price;
-            pro.persist();
-            return pro;
-        }
-        return null;
+    public static Uni<ProductEntity> updateProduct(Long id, @Valid ProductEntity newProduct) {
+        return findById(id).onItem().transformToUni(existingProduct -> {
+            if (existingProduct != null) {
+                existingProduct.name = newProduct.name;
+                existingProduct.quantity = newProduct.quantity;
+                existingProduct.price = newProduct.price;
+                return existingProduct.persist().replaceWith(existingProduct);
+            }
+            return Uni.createFrom().nullItem();
+        });
     }
 
-    public static void deleteProduct(Long id) {
-        deleteById(id);
+    public static Uni<Boolean> deleteProduct(Long id) {
+        return deleteById(id);
     }
 }

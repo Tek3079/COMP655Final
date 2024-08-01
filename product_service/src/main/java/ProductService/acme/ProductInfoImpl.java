@@ -1,11 +1,11 @@
-package main.java.ProductService.acme;
+package ProductService.acme;
 
+import io.quarkus.hibernate.reactive.panache.common.WithTransaction;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import java.util.List;
-import ProductService.acme.Product;
 
 @ApplicationScoped
 public class ProductInfoImpl {
@@ -25,7 +25,8 @@ public class ProductInfoImpl {
      * @param product ProductEntity object to be created.
      * @return The created ProductEntity.
      */
-    @Transactional
+
+    @WithTransaction()
     public Uni<Product> createProduct(@Valid Product product) {
         return Product.persistProduct(product).replaceWith(product);
     }
@@ -56,17 +57,18 @@ public class ProductInfoImpl {
      * @param product Updated product details.
      * @return The updated ProductEntity, or null if not found.
      */
-    // @Transactional
-    // public Uni<Product> updateProduct(Long id, @Valid Product product) {
-    // return Product.updateProduct(id, product);
-    // }
+    @WithTransaction()
+    public Uni<Product> updateProduct(Long id, @Valid Product product) {
+        return Product.updateProduct(id, product);
+    }
 
     /**
      * Delete a product by its ID.
      *
      * @param id ID of the product to be deleted.
      */
-    @Transactional
+
+    @WithTransaction()
     public Uni<Boolean> deleteProduct(Long id) {
         return Product.deleteProduct(id);
     }

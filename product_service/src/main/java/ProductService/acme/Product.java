@@ -2,6 +2,7 @@ package ProductService.acme;
 
 import io.quarkus.hibernate.reactive.panache.PanacheEntity;
 import io.quarkus.hibernate.reactive.panache.PanacheEntityBase;
+
 import io.quarkus.runtime.annotations.RegisterForReflection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
@@ -13,6 +14,8 @@ import jakarta.persistence.Id;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.NotFoundException;
+
 import java.util.List;
 import io.smallrye.mutiny.Uni;
 
@@ -20,10 +23,6 @@ import io.smallrye.mutiny.Uni;
 @Entity(name = "products")
 @RegisterForReflection
 public class Product extends PanacheEntity {
-
-    // @Id
-    // @GeneratedValue(strategy = GenerationType.IDENTITY)
-    // public Long id;
 
     @Column(name = "name", nullable = false)
     @NotBlank(message = "name cannot be blank")
@@ -80,18 +79,19 @@ public class Product extends PanacheEntity {
         return find("order by random()").firstResult();
     }
 
-    // public static Uni<Product> updateProduct(Long id, @Valid Product newProduct)
-    // {
-    // return findById(id).onItem().transformToUni(existingProduct -> {
-    // if (existingProduct != null) {
-    // existingProduct.name = newProduct.name;
-    // existingProduct.quantity = newProduct.quantity;
-    // existingProduct.price = newProduct.price;
-    // return existingProduct.persist().replaceWith(existingProduct);
-    // }
-    // return Uni.createFrom().nullItem();
-    // });
-    // }
+    public static Uni<Product> updateProduct(Long id, @Valid Product newProduct) {
+        return findById(id).onItem().transformToUni(existingProduct -> {
+            if (existingProduct != null) {
+                // Cast to your actual entity class
+                Product product = (Product) existingProduct;
+                product.name = newProduct.name;
+                product.quantity = newProduct.quantity;
+                product.price = newProduct.price;
+                return product.persist().replaceWith(product);
+            }
+            return Uni.createFrom().failure(new NotFoundException("Product not found with id: " + id));
+        });
+    }
 
     public static Uni<Boolean> deleteProduct(Long id) {
         return deleteById(id);

@@ -1,7 +1,7 @@
 package purchase;
 
 import io.quarkus.grpc.GrpcClient;
-import io.smallrye.mutiny.Multi;
+
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.ApplicationPath;
@@ -12,8 +12,10 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import org.eclipse.microprofile.reactive.messaging.Channel;
 import org.eclipse.microprofile.reactive.messaging.Emitter;
+import org.eclipse.microprofile.reactive.messaging.Incoming;
 import org.jboss.resteasy.reactive.RestSseElementType;
 
+import com.example.purchase.Customer;
 import com.example.purchase.CustomerResponse;
 import com.example.purchase.CustomerServiceGrpc;
 import com.example.purchase.ProductResponse;
@@ -40,21 +42,24 @@ public class PurchaseResource {
     @Channel("order-request")
     Emitter<Order> orderEmitter;
 
+    @Inject
     @Channel("order-response")
     Emitter<String> orderResponseEmitter;
-    @Inject
-    @Channel("responses")
-    Multi<String> responses;
+    // @Inject
+    // @Channel("responses")
+    // Multi<String> responses;
+    CustomerResponse customer;
+    ProductResponse product;
 
     @POST
     public Response createPurchase() {
         // Get a random customer
-        CustomerResponse customer = customerClient.getRandomCustomer(Empty.newBuilder().build());
+        customer = customerClient.getRandomCustomer(Empty.newBuilder().build());
 
         // Try to purchase a product up to 3 times
         for (int i = 0; i < 3; i++) {
             // Get a random product
-            ProductResponse product = productClient.getRandomProduct(Empty.newBuilder().build());
+            product = productClient.getRandomProduct(Empty.newBuilder().build());
 
             // Check if customer has enough balance
             if (customer.getCustomer().getBalance() >= product.getProduct().getPrice()) {
@@ -75,10 +80,21 @@ public class PurchaseResource {
     }
 
     @GET
-    @Path("/response")
-    @Produces(MediaType.SERVER_SENT_EVENTS)
-    @RestSseElementType(MediaType.TEXT_PLAIN)
-    public Multi<String> consume() {
-        return responses;
+    @Path("/order-response")
+    public void handleOrderResponse(String orderId) {
+        if (orderId != null) {
+            String id = customer.getCustomer().getId();
+            double balance = customer.getCustomer().getBalance();
+            Double price = product.getProduct().getPrice();
+            customerClient.updateCustomer(Customer.newBuilder().setId(id).setBalance(balance
+                    - price).build());
+        }
     }
+    // @GET
+    // @Path("/response")
+    // @Produces(MediaType.SERVER_SENT_EVENTS)
+    // @RestSseElementType(MediaType.TEXT_PLAIN)
+    // public Multi<String> consume() {
+    // return responses;
+    // }
 }

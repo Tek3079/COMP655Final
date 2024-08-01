@@ -10,13 +10,12 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 import java.net.URI;
-import main.java.ProductService.acme.ProductInfoImpl;
 
 @Path("/")
 public class ProductResource {
 
         @Inject
-        main.java.ProductService.acme.ProductInfoImpl productInfo;
+        ProductInfoImpl productInfo;
 
         @Path("/products")
         @GET
@@ -30,17 +29,16 @@ public class ProductResource {
         @POST
         @Consumes(MediaType.APPLICATION_JSON)
         @Produces(MediaType.APPLICATION_JSON)
-        @Transactional
-        @Blocking
         public Uni<Response> createProduct(@Valid Product product) {
                 return productInfo.createProduct(product)
-                                .onItem().transform(createdProduct -> {
-                                        return Response.created(URI.create("/product/" + createdProduct.id))
-                                                        .entity(createdProduct).build();
-                                })
+                                .onItem().transform(createdProduct -> Response
+                                                .status(Response.Status.CREATED)
+                                                .entity(createdProduct)
+                                                .build())
                                 .onFailure().recoverWithItem(e -> {
-                                        e.printStackTrace();
-                                        return Response.status(Response.Status.BAD_REQUEST).entity("Validation Error")
+                                        e.printStackTrace(); // Log the error for debugging
+                                        return Response.status(Response.Status.BAD_REQUEST)
+                                                        .entity("Validation Error")
                                                         .build();
                                 });
         }
@@ -75,22 +73,21 @@ public class ProductResource {
                                 });
         }
 
-        // @PUT
-        // @Path("/product/{id}")
-        // @Consumes(MediaType.APPLICATION_JSON)
-        // @Produces(MediaType.APPLICATION_JSON)
-        // public Uni<Response> updateProduct(@PathParam("id") Long id, @Valid Product
-        // product) {
-        // return productInfo.updateProduct(id, product)
-        // .onItem().transform(updatedProduct -> {
-        // if (updatedProduct != null) {
-        // return Response.ok(updatedProduct).build();
-        // } else {
-        // return Response.status(Response.Status.NOT_FOUND)
-        // .entity("Product with this ID not found").build();
-        // }
-        // });
-        // }
+        @PUT
+        @Path("/product/{id}")
+        @Consumes(MediaType.APPLICATION_JSON)
+        @Produces(MediaType.APPLICATION_JSON)
+        public Uni<Response> updateProduct(@PathParam("id") Long id, @Valid Product product) {
+                return productInfo.updateProduct(id, product)
+                                .onItem().transform(updatedProduct -> {
+                                        if (updatedProduct != null) {
+                                                return Response.ok(updatedProduct).build();
+                                        } else {
+                                                return Response.status(Response.Status.NOT_FOUND)
+                                                                .entity("Product with this ID not found").build();
+                                        }
+                                });
+        }
 
         @DELETE
         @Path("/product/{id}")

@@ -1,10 +1,12 @@
 package purchase;
+import java.time.LocalDateTime;
+
 public class Order {
     public String id;
     public String customerId;
     public String productId;
     public double amount;
-    public long time;
+    public LocalDateTime time;
 
     public void setId(String string) {
         id = string;
@@ -23,7 +25,7 @@ public class Order {
     }
 
     public void setTimeToNow() {
-        time = System.currentTimeMillis();
+        this.time = LocalDateTime.now();
     }
 
 }

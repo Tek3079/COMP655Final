@@ -20,4 +20,4 @@ values (1, 1, 2, '2023-04-30 12:01:01', 45.0),
 (9, 1, 2, '2023-04-30 12:01:01', 45.0),
 (10, 1, 2, '2023-04-30 12:01:01', 45.0);
 
-alter sequence orders_seq restart with 11;
+alter sequence orders_SEQ restart with 11;

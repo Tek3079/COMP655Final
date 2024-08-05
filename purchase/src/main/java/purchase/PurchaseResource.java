@@ -2,6 +2,7 @@ package purchase;
 
 import io.quarkus.grpc.GrpcClient;
 
+import io.smallrye.mutiny.Multi;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.ApplicationPath;
@@ -44,10 +45,8 @@ public class PurchaseResource {
 
     @Inject
     @Channel("order-response")
-    Emitter<String> orderResponseEmitter;
-    // @Inject
-    // @Channel("responses")
-    // Multi<String> responses;
+    Multi<Order> orders;
+
     CustomerResponse customer;
     ProductResponse product;
 
@@ -55,46 +54,34 @@ public class PurchaseResource {
     public Response createPurchase() {
         // Get a random customer
         customer = customerClient.getRandomCustomer(Empty.newBuilder().build());
-
+        double balance = customer.getCustomer().getBalance();
         // Try to purchase a product up to 3 times
         for (int i = 0; i < 3; i++) {
             // Get a random product
             product = productClient.getRandomProduct(Empty.newBuilder().build());
-
+            Double price = product.getProduct().getPrice();
             // Check if customer has enough balance
-            if (customer.getCustomer().getBalance() >= product.getProduct().getPrice()) {
+            if (balance >= price) {
                 // Create an order
                 Order order = new Order();
-                order.id = UUID.randomUUID().toString();
                 order.customerId = customer.getCustomer().getId();
                 order.productId = product.getProduct().getId();
-                order.amount = product.getProduct().getPrice();
-                order.setTimeToNow();
+                order.amount = price;
 
                 // Send order to Report service via RabbitMQ
                 orderEmitter.send(order);
+                customerClient.updateCustomer(Customer.newBuilder().setId(customer.getCustomer().getId()).setBalance(balance
+                        - price).build());
                 return Response.ok(order).build();
             }
         }
         return Response.status(Response.Status.NOT_FOUND).entity("No suitable product found for the customer").build();
     }
 
-    @GET
-    @Path("/order-response")
-    public void handleOrderResponse(String orderId) {
-        if (orderId != null) {
-            String id = customer.getCustomer().getId();
-            double balance = customer.getCustomer().getBalance();
-            Double price = product.getProduct().getPrice();
-            customerClient.updateCustomer(Customer.newBuilder().setId(id).setBalance(balance
-                    - price).build());
-        }
-    }
-    // @GET
-    // @Path("/response")
-    // @Produces(MediaType.SERVER_SENT_EVENTS)
-    // @RestSseElementType(MediaType.TEXT_PLAIN)
-    // public Multi<String> consume() {
-    // return responses;
-    // }
+     @GET
+     @Path("/order-response")
+     @Produces(MediaType.SERVER_SENT_EVENTS)
+     public Multi<Order> consume() {
+     return orders;
+     }
 }

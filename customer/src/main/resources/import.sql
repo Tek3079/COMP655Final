@@ -6,10 +6,10 @@ CREATE TABLE IF NOT EXISTS customer (
 );
 
 INSERT INTO customer (id, name, email, balance)
-VALUES (1, 'Ivy', 'Ivy@example.com', 100),
-(2, 'Jack', 'Jack@example.com', 10),
-(3, 'Alice', 'Alice@example.com', 1),
-(4, 'David', 'David@example.com', 50),
-(5, 'Hank', 'Hank@example.com', 77);
+VALUES (1, 'Ivy', 'Ivy@example.com', 100000),
+(2, 'Jack', 'Jack@example.com', 100000),
+(3, 'Alice', 'Alice@example.com', 10000),
+(4, 'David', 'David@example.com', 500000),
+(5, 'Hank', 'Hank@example.com', 770000);
 
 ALTER SEQUENCE customer_seq RESTART WITH 6;

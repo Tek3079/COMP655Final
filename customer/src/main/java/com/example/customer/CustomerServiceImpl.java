@@ -25,16 +25,38 @@ public class CustomerServiceImpl extends CustomerServiceGrpc.CustomerServiceImpl
         responseObserver.onCompleted();
     }
 
+//    @Override
+//    @Blocking
+//    @Transactional(Transactional.TxType.REQUIRED)
+//    public void updateCustomer(Customer request, StreamObserver<Empty> responseObserver) {
+//        CustomerEntity customerEntity = CustomerEntity.findById(request.getId());
+//        customerEntity.name = request.getName();
+//        customerEntity.email = request.getEmail();
+//        customerEntity.balance = request.getBalance();
+//        CustomerEntity.persistCustomer(customerEntity);
+//
+//        responseObserver.onCompleted();
+//    }
     @Override
     @Blocking
-    @Transactional(Transactional.TxType.REQUIRED)
+    @Transactional
     public void updateCustomer(Customer request, StreamObserver<Empty> responseObserver) {
-        CustomerEntity customerEntity = CustomerEntity.findById(request.getId());
-        customerEntity.name = request.getName();
-        customerEntity.email = request.getEmail();
-        customerEntity.balance = request.getBalance();
-        CustomerEntity.persistCustomer(customerEntity);
+        try {
+            CustomerEntity customerEntity = CustomerEntity.findById(request.getId());
+            if (customerEntity == null) {
+                responseObserver.onError(new Exception("Customer not found"));
+                return;
+            }
 
-        responseObserver.onCompleted();
+            customerEntity.name = request.getName();
+            customerEntity.email = request.getEmail();
+            customerEntity.balance = request.getBalance();
+            customerEntity.persist();
+
+            responseObserver.onNext(Empty.getDefaultInstance());
+            responseObserver.onCompleted();
+        } catch (Exception e) {
+            responseObserver.onError(e);
+        }
     }
 }

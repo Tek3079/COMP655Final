@@ -37,8 +37,8 @@ public class ProductEntity extends PanacheEntity {
 
     @Column(name = "price", nullable = false)
     @NotNull(message = "Price cannot be null")
-    @Min(message = "Cannot be lower than 0", value = 0)
-    public Float price;
+    @Min(message = "Cannot be lower than 0", value = 0.0)
+    public double price;
 
     // Getter and Setter methods
  

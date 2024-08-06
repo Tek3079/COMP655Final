@@ -5,6 +5,7 @@ import java.util.UUID;
 import com.example.customer.Customer;
 import com.example.customer.CustomerResponse;
 import com.example.customer.CustomerServiceGrpc;
+import com.example.purchase.Product;
 import com.example.purchase.ProductResponse;
 import com.example.purchase.ProductServiceGrpc;
 import com.google.protobuf.Empty;
@@ -40,9 +41,9 @@ public class PurchaseResources {
     @Channel("order-request")
     Emitter<Order> orderEmitter;
 
-     @Inject
-     @Channel("order-response")
-     Multi<Order> orders;
+    @Inject
+    @Channel("order-response")
+    Multi<Order> orders;
 
     CustomerResponse customer;
     ProductResponse product;
@@ -69,9 +70,21 @@ public class PurchaseResources {
 
                 // Send order to Report service via RabbitMQ
                 orderEmitter.send(order);
-                customerService
-                        .updateCustomer(Customer.newBuilder().setId(customer.getCustomer().getId())
-                                .setBalance(balance - price).build());
+                // Update customer balance
+                customerService.updateCustomer(Customer.newBuilder()
+                        .setId(customer.getCustomer().getId())
+                        .setName(customer.getCustomer().getName())
+                        .setEmail(customer.getCustomer().getEmail())
+                        .setBalance(balance - price)
+                        .build());
+                // update product inventory
+                productService.updateProduct(Product.newBuilder()
+                        .setId(product.getProduct().getId())
+                        .setName(product.getProduct().getName())
+                        .setPrice(product.getProduct().getPrice())
+                        .setQuantity(product.getProduct().getQuantity() - 1)
+                        .build());
+//                 Return order
                 return Response.ok(order).build();
             }
         }
@@ -84,5 +97,7 @@ public class PurchaseResources {
      public Multi<Order> consume() {
      return orders;
      }
+
+
 
 }

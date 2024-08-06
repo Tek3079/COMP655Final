@@ -40,9 +40,9 @@ public class PurchaseResources {
     @Channel("order-request")
     Emitter<Order> orderEmitter;
 
-    // @Inject
-    // @Channel("order-response")
-    // Multi<Order> orders;
+     @Inject
+     @Channel("order-response")
+     Multi<Order> orders;
 
     CustomerResponse customer;
     ProductResponse product;
@@ -61,7 +61,7 @@ public class PurchaseResources {
             if (customer.getCustomer().getBalance() >= product.getProduct().getPrice()) {
                 // Create an order
                 Order order = new Order();
-                order.id = UUID.randomUUID().toString();
+//                order.id = UUID.randomUUID().toString();
                 order.customerId = customer.getCustomer().getId();
                 order.productId = product.getProduct().getId();
                 order.amount = product.getProduct().getPrice();
@@ -78,11 +78,11 @@ public class PurchaseResources {
         return Response.status(Response.Status.NOT_FOUND).entity("No suitable product found for the customer").build();
     }
 
-    // @GET
-    // @Path("/order-response")
-    // @Produces(MediaType.SERVER_SENT_EVENTS)
-    // public Multi<Order> consume() {
-    // return orders;
-    // }
+     @GET
+     @Path("/order-response")
+     @Produces(MediaType.SERVER_SENT_EVENTS)
+     public Multi<Order> consume() {
+     return orders;
+     }
 
 }

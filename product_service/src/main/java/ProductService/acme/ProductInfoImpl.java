@@ -1,75 +1,46 @@
+
 package ProductService.acme;
 
+import io.quarkus.grpc.GrpcService;
+import io.quarkus.hibernate.reactive.panache.Panache;
 import io.quarkus.hibernate.reactive.panache.common.WithTransaction;
-import io.smallrye.mutiny.Uni;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.transaction.Transactional;
-import jakarta.validation.Valid;
-import java.util.List;
 
-@ApplicationScoped
-public class ProductInfoImpl {
+import com.example.purchase.Product;
+import com.example.purchase.ProductResponse;
+import com.example.purchase.ProductServiceGrpc;
+import com.google.protobuf.Empty;
+import io.grpc.stub.StreamObserver;
 
-    /**
-     * Retrieve all products.
-     *
-     * @return List of all products.
-     */
-    public Uni<List<Product>> getAllProducts() {
-        return Product.findAllProducts();
-    }
 
-    /**
-     * Create a new product.
-     *
-     * @param product ProductEntity object to be created.
-     * @return The created ProductEntity.
-     */
-
-    @WithTransaction()
-    public Uni<Product> createProduct(@Valid Product product) {
-        return Product.persistProduct(product).replaceWith(product);
-    }
-
-    /**
-     * Retrieve a product by its ID.
-     *
-     * @param id ID of the product to be retrieved.
-     * @return The ProductEntity with the given ID, or null if not found.
-     */
-    public Uni<Product> getProductById(Long id) {
-        return Product.getProductById(id);
-    }
-
-    /**
-     * Retrieve a random product.
-     *
-     * @return A random ProductEntity, or null if none exists.
-     */
-    public Uni<Product> getRandomProduct() {
-        return Product.findRandomProduct();
-    }
-
-    /**
-     * Update an existing product.
-     *
-     * @param id      ID of the product to be updated.
-     * @param product Updated product details.
-     * @return The updated ProductEntity, or null if not found.
-     */
-    @WithTransaction()
-    public Uni<Product> updateProduct(Long id, @Valid Product product) {
-        return Product.updateProduct(id, product);
-    }
-
-    /**
-     * Delete a product by its ID.
-     *
-     * @param id ID of the product to be deleted.
-     */
-
-    @WithTransaction()
-    public Uni<Boolean> deleteProduct(Long id) {
-        return Product.deleteProduct(id);
+@GrpcService
+public class ProductInfoImpl extends ProductServiceGrpc.ProductServiceImplBase {
+    @Override
+    public void getRandomProduct(Empty request, StreamObserver<ProductResponse> responseObserver) {
+        Panache.withSession(() -> 
+            ProductEntity.findRandomProduct()
+                .onItem().transform(productEntity -> {
+                    if (productEntity == null) {
+                        return null;
+                    }
+                    return ProductResponse.newBuilder()
+                        .setProduct(Product.newBuilder()
+                            .setId(productEntity.id)
+                            .setName(productEntity.name)
+                            .setQuantity(productEntity.quantity)
+                            .setPrice(productEntity.price)
+                            .build())
+                        .build();
+                })
+        ).subscribe().with(
+            productResponse -> {
+                if (productResponse == null) {
+                    responseObserver.onError(new RuntimeException("No product found"));
+                } else {
+                    responseObserver.onNext(productResponse);
+                    responseObserver.onCompleted();
+                }
+            },
+            throwable -> responseObserver.onError(new RuntimeException("Failed to fetch product", throwable))
+        );
     }
 }

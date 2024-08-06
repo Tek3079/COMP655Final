@@ -9,7 +9,7 @@ package com.example.purchase;
 import "google/protobuf/empty.proto";
 
 message Product {
-    string id = 1;
+    int64 id = 1;
     string name = 2;
     int32 quantity = 3;
     double price = 4;
@@ -20,6 +20,6 @@ message ProductResponse {
 }
 
 service ProductService {
-    rpc GetRandomProduct (google.protobuf.Empty) returns (ProductResponse);
-    rpc UpdateProduct (Product) returns (google.protobuf.Empty);
+    rpc getRandomProduct (google.protobuf.Empty) returns (ProductResponse);
+    rpc updateProduct (Product) returns (google.protobuf.Empty);
 }

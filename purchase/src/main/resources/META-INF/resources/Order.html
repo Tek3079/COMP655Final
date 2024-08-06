@@ -30,7 +30,7 @@
           });
       }
 
-      var source = new EventSource('/purchase/response');
+      var source = new EventSource('/purchase/order-response');
       source.onmessage = (event) => {
         const newElement = document.createElement('li');
         const eventList = document.getElementById('list');

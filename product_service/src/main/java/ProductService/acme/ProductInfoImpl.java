@@ -43,4 +43,31 @@ public class ProductInfoImpl extends ProductServiceGrpc.ProductServiceImplBase {
             throwable -> responseObserver.onError(new RuntimeException("Failed to fetch product", throwable))
         );
     }
+    @Override
+    public void updateProduct(Product request, StreamObserver<Empty> responseObserver) {
+        // Create a new ProductEntity instance to update with the data from the request
+        ProductEntity newProduct = new ProductEntity();
+        newProduct.name = request.getName();
+        newProduct.quantity = request.getQuantity();
+        newProduct.price = request.getPrice();
+
+        // Use Panache.withTransaction to ensure a reactive session is available
+        Panache.withTransaction(() -> ProductEntity.updateProduct(request.getId(), newProduct)
+                .onItem().transformToUni(updatedProduct -> {
+                    // Notify successful completion
+                    responseObserver.onNext(Empty.getDefaultInstance());
+                    responseObserver.onCompleted();
+                    return Uni.createFrom().voidItem(); // Ensure correct return type
+                })
+                .onFailure().recoverWithUni(throwable -> {
+                    // Handle failure
+                    responseObserver.onError(new RuntimeException("Failed to update product", throwable));
+                    return Uni.createFrom().voidItem(); // Ensure correct return type
+                })).subscribe().with(
+                // Completion handlers for subscription
+                success -> {
+                },
+                throwable -> responseObserver
+                        .onError(new RuntimeException("Failed to update product", throwable)));
+    }
 }

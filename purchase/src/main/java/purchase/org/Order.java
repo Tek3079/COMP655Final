@@ -3,8 +3,8 @@ import java.time.LocalDateTime;
 
 public class Order {
     public String id;
-    public String customerId;
-    public String productId;
+    public long customerId;
+    public Long productId;
     public double amount;
     public LocalDateTime time;
 
@@ -12,11 +12,11 @@ public class Order {
         id = string;
     }
 
-    public void setCustomerId(String id2) {
+    public void setCustomerId(long id2) {
         customerId = id2;
     }
 
-    public void setProductId(String id2) {
+    public void setProductId(long id2) {
         productId = id2;
     }
 

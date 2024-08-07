@@ -1,7 +1,17 @@
 package purchase;
 
+import java.util.UUID;
+
+import com.example.customer.Customer;
+import com.example.customer.CustomerResponse;
+import com.example.customer.CustomerServiceGrpc;
+import com.example.purchase.Product;
+import com.example.purchase.ProductResponse;
+import com.example.purchase.ProductServiceGrpc;
+import com.google.protobuf.Empty;
 import io.quarkus.grpc.GrpcClient;
 
+import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Multi;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -11,33 +21,23 @@ import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
 import org.eclipse.microprofile.reactive.messaging.Channel;
 import org.eclipse.microprofile.reactive.messaging.Emitter;
-import org.eclipse.microprofile.reactive.messaging.Incoming;
-import org.jboss.resteasy.reactive.RestSseElementType;
-
-import com.example.purchase.Customer;
-import com.example.purchase.CustomerResponse;
-import com.example.purchase.CustomerServiceGrpc;
-import com.example.purchase.ProductResponse;
-import com.example.purchase.ProductServiceGrpc;
-import com.google.protobuf.Empty;
-import java.util.UUID;
-import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 @Path("/purchase")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@ApplicationPath("")
+@ApplicationPath("/purchase")
 @Transactional
-public class PurchaseResource {
-
+public class PurchaseResources {
+    @Inject
     @GrpcClient("customer")
-    CustomerServiceGrpc.CustomerServiceBlockingStub customerClient;
+    CustomerServiceGrpc.CustomerServiceBlockingStub customerService;
 
     @GrpcClient("product")
-    ProductServiceGrpc.ProductServiceBlockingStub productClient;
+    ProductServiceGrpc.ProductServiceBlockingStub productService;
 
     @Inject
     @Channel("order-request")
@@ -53,25 +53,40 @@ public class PurchaseResource {
     @POST
     public Response createPurchase() {
         // Get a random customer
-        customer = customerClient.getRandomCustomer(Empty.newBuilder().build());
+        customer = customerService.getRandomCustomer(Empty.newBuilder().build());
         double balance = customer.getCustomer().getBalance();
         // Try to purchase a product up to 3 times
         for (int i = 0; i < 3; i++) {
             // Get a random product
-            product = productClient.getRandomProduct(Empty.newBuilder().build());
+            product = productService.getRandomProduct(Empty.newBuilder().build());
             Double price = product.getProduct().getPrice();
             // Check if customer has enough balance
-            if (balance >= price) {
+            if (customer.getCustomer().getBalance() >= product.getProduct().getPrice()) {
                 // Create an order
                 Order order = new Order();
+//                order.id = UUID.randomUUID().toString();
                 order.customerId = customer.getCustomer().getId();
                 order.productId = product.getProduct().getId();
-                order.amount = price;
+                order.amount = product.getProduct().getPrice();
+                order.setTimeToNow();
 
                 // Send order to Report service via RabbitMQ
                 orderEmitter.send(order);
-                customerClient.updateCustomer(Customer.newBuilder().setId(customer.getCustomer().getId()).setBalance(balance
-                        - price).build());
+                // Update customer balance
+                customerService.updateCustomer(Customer.newBuilder()
+                        .setId(customer.getCustomer().getId())
+                        .setName(customer.getCustomer().getName())
+                        .setEmail(customer.getCustomer().getEmail())
+                        .setBalance(balance - price)
+                        .build());
+                // update product inventory
+                productService.updateProduct(Product.newBuilder()
+                        .setId(product.getProduct().getId())
+                        .setName(product.getProduct().getName())
+                        .setPrice(product.getProduct().getPrice())
+                        .setQuantity(product.getProduct().getQuantity() - 1)
+                        .build());
+//                 Return order
                 return Response.ok(order).build();
             }
         }
@@ -84,4 +99,7 @@ public class PurchaseResource {
      public Multi<Order> consume() {
      return orders;
      }
+
+
+
 }

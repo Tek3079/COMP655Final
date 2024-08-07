@@ -2,6 +2,7 @@ package ProductService.acme;
 
 import io.smallrye.common.annotation.Blocking;
 import io.smallrye.mutiny.Uni;
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
@@ -11,17 +12,16 @@ import jakarta.ws.rs.core.Response;
 
 import java.net.URI;
 
+import com.example.purchase.Product;
+
 @Path("/")
+@ApplicationScoped
 public class ProductResource {
-
-        @Inject
-        ProductInfoImpl productInfo;
-
-        @Path("/products")
+@Path("/products")
         @GET
         @Produces(MediaType.APPLICATION_JSON)
         public Uni<Response> getProducts() {
-                return productInfo.getAllProducts()
+                return ProductEntity.findAllProducts()
                                 .onItem().transform(products -> Response.ok(products).build());
         }
 
@@ -29,8 +29,8 @@ public class ProductResource {
         @POST
         @Consumes(MediaType.APPLICATION_JSON)
         @Produces(MediaType.APPLICATION_JSON)
-        public Uni<Response> createProduct(@Valid Product product) {
-                return productInfo.createProduct(product)
+        public Uni<Response> createProduct(@Valid ProductEntity product) {
+                return ProductEntity.persistProduct(product)
                                 .onItem().transform(createdProduct -> Response
                                                 .status(Response.Status.CREATED)
                                                 .entity(createdProduct)
@@ -47,7 +47,7 @@ public class ProductResource {
         @Path("/product/{id}")
         @Produces(MediaType.APPLICATION_JSON)
         public Uni<Response> getProductById(@PathParam("id") Long id) {
-                return productInfo.getProductById(id)
+                return ProductEntity.getProductById(id)
                                 .onItem().transform(product -> {
                                         if (product != null) {
                                                 return Response.ok(product).build();
@@ -62,7 +62,7 @@ public class ProductResource {
         @Path("/product/random")
         @Produces(MediaType.APPLICATION_JSON)
         public Uni<Response> getRandomProduct() {
-                return productInfo.getRandomProduct()
+                return ProductEntity.findRandomProduct()
                                 .onItem().transform(product -> {
                                         if (product != null) {
                                                 return Response.ok(product).build();
@@ -77,8 +77,8 @@ public class ProductResource {
         @Path("/product/{id}")
         @Consumes(MediaType.APPLICATION_JSON)
         @Produces(MediaType.APPLICATION_JSON)
-        public Uni<Response> updateProduct(@PathParam("id") Long id, @Valid Product product) {
-                return productInfo.updateProduct(id, product)
+        public Uni<Response> updateProduct(@PathParam("id") Long id, @Valid ProductEntity product) {
+                return ProductEntity.updateProduct(id, product)
                                 .onItem().transform(updatedProduct -> {
                                         if (updatedProduct != null) {
                                                 return Response.ok(updatedProduct).build();
@@ -93,7 +93,7 @@ public class ProductResource {
         @Path("/product/{id}")
         @Produces(MediaType.APPLICATION_JSON)
         public Uni<Response> deleteProduct(@PathParam("id") Long id) {
-                return productInfo.deleteProduct(id)
+                return ProductEntity.deleteProduct(id)
                                 .onItem().transform(deleted -> {
                                         if (Boolean.TRUE.equals(deleted)) {
                                                 return Response.noContent().build();
@@ -102,5 +102,5 @@ public class ProductResource {
                                                                 .entity("Product with this ID not found").build();
                                         }
                                 });
-        }
+}
 }

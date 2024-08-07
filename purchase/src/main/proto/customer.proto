@@ -1,25 +1,26 @@
+
 syntax = "proto3";
 
 option java_multiple_files = true;
-option java_package = "com.example.purchase";
+option java_package = "com.example.customer";
 option java_outer_classname = "CustomerServiceProto";
 
-package com.example.purchase;
+package customer;
 
 import "google/protobuf/empty.proto";
 
 message Customer {
-    string id = 1;
-    string name = 2;
-    string email = 3;
-    double balance = 4;
+  int64 id = 1;
+  string name = 2;
+  string email = 3;
+  double balance = 4;
 }
 
 message CustomerResponse {
-    Customer customer = 1;
+  Customer customer = 1;
 }
 
 service CustomerService {
-    rpc GetRandomCustomer (google.protobuf.Empty) returns (CustomerResponse);
-    rpc UpdateCustomer (Customer) returns (google.protobuf.Empty);
+  rpc getRandomCustomer (google.protobuf.Empty) returns (CustomerResponse) {}
+  rpc updateCustomer (Customer) returns (google.protobuf.Empty);
 }

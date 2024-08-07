@@ -12,14 +12,12 @@
   <body>
     <div class="container">
       <div class="card">
-        <div class="card-body">
           <h2 class="card-title">Order Board</h2>
           <button class="btn" onclick="createPurchase()">
             Create Purchase
           </button>
           <ul id="list"></ul>
         </div>
-      </div>
     </div>
 
     <script>
@@ -34,7 +32,7 @@
           });
       }
 
-      var source = new EventSource('/purchase/response');
+      var source = new EventSource('/purchase/order-response');
       source.onmessage = (event) => {
         const newElement = document.createElement('li');
         const eventList = document.getElementById('list');

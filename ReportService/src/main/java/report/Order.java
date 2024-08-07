@@ -69,7 +69,7 @@ public class Order extends PanacheEntity {
     /**
      * Find a Order by the order's ID in the database. ID is a primary key, so there
      * can only be 1 result.
-     * 
+     *
      * @param id The ID of the order
      * @return The order containing the ID in the param
      */
@@ -79,7 +79,7 @@ public class Order extends PanacheEntity {
 
     /**
      * A method to return all the orders in the psql database.
-     * 
+     *
      * @return a List of Orders that are in the database
      */
     public static Uni<List<Order>> findAllOrders() {
@@ -89,7 +89,7 @@ public class Order extends PanacheEntity {
     /**
      * A method that deletes a order in the database by the id of the order. It
      * takes an ID and deletes the order.
-     * 
+     *
      * @param id The id of the order in the database
      */
     public static void deleteOrder(Long id) {

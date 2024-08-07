@@ -20,6 +20,6 @@ message CustomerResponse {
 }
 
 service CustomerService {
-  rpc GetRandomCustomer (google.protobuf.Empty) returns (CustomerResponse) {}
-  rpc UpdateCustomer (Customer) returns (google.protobuf.Empty);
+  rpc getRandomCustomer (google.protobuf.Empty) returns (CustomerResponse) {}
+  rpc updateCustomer (Customer) returns (google.protobuf.Empty);
 }

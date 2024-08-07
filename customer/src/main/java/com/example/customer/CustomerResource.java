@@ -43,7 +43,6 @@ public class CustomerResource {
         return Response.ok(CustomerEntity.findRandomCustomer()).build();
     }
 
-
     @PUT
     @Path("/customer/{id}")
     @Transactional(Transactional.TxType.REQUIRED)
@@ -58,7 +57,6 @@ public class CustomerResource {
         c.balance = customerEntity.balance;
         return Response.ok(CustomerEntity.persistCustomer(c)).build();
     }
-
 
     @POST
     @Path("/customer")

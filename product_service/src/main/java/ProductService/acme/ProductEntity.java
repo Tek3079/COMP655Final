@@ -6,6 +6,7 @@ import io.quarkus.hibernate.reactive.panache.PanacheEntityBase;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
+import jakarta.inject.Singleton;
 import jakarta.persistence.Column;
 import jakarta.validation.constraints.Min;
 import jakarta.persistence.GeneratedValue;
@@ -22,7 +23,8 @@ import io.smallrye.mutiny.Uni;
 @Table(name = "products", schema = "public")
 @Entity(name = "products")
 @RegisterForReflection
-public class Product extends PanacheEntity {
+@Singleton
+public class ProductEntity extends PanacheEntity {
 
     @Column(name = "name", nullable = false)
     @NotBlank(message = "name cannot be blank")
@@ -35,55 +37,33 @@ public class Product extends PanacheEntity {
 
     @Column(name = "price", nullable = false)
     @NotNull(message = "Price cannot be null")
-    @Min(message = "Cannot be lower than 0", value = 0)
-    public Float price;
+    @Min(message = "Cannot be lower than 0", value = 0.0)
+    public double price;
 
     // Getter and Setter methods
-    public String getName() {
-        return name;
-    }
+ 
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public Integer getQuantity() {
-        return quantity;
-    }
-
-    public void setQuantity(Integer quantity) {
-        this.quantity = quantity;
-    }
-
-    public Float getPrice() {
-        return price;
-    }
-
-    public void setPrice(Float price) {
-        this.price = price;
-    }
-
-    public static Uni<List<Product>> findAllProducts() {
+    public static Uni<List<ProductEntity>> findAllProducts() {
         return listAll();
     }
 
-    public static Uni<Void> persistProduct(Product product) {
+    public static Uni<Void> persistProduct(ProductEntity product) {
         return product.persist().replaceWithVoid();
     }
 
-    public static Uni<Product> getProductById(Long id) {
+    public static Uni<ProductEntity> getProductById(Long id) {
         return findById(id);
     }
 
-    public static Uni<Product> findRandomProduct() {
+    public static Uni<ProductEntity> findRandomProduct() {
         return find("order by random()").firstResult();
     }
 
-    public static Uni<Product> updateProduct(Long id, @Valid Product newProduct) {
+    public static Uni<ProductEntity> updateProduct(Long id, @Valid ProductEntity newProduct) {
         return findById(id).onItem().transformToUni(existingProduct -> {
             if (existingProduct != null) {
                 // Cast to your actual entity class
-                Product product = (Product) existingProduct;
+                ProductEntity product = (ProductEntity) existingProduct;
                 product.name = newProduct.name;
                 product.quantity = newProduct.quantity;
                 product.price = newProduct.price;

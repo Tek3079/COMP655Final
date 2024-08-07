@@ -25,18 +25,6 @@ public class CustomerServiceImpl extends CustomerServiceGrpc.CustomerServiceImpl
         responseObserver.onCompleted();
     }
 
-//    @Override
-//    @Blocking
-//    @Transactional(Transactional.TxType.REQUIRED)
-//    public void updateCustomer(Customer request, StreamObserver<Empty> responseObserver) {
-//        CustomerEntity customerEntity = CustomerEntity.findById(request.getId());
-//        customerEntity.name = request.getName();
-//        customerEntity.email = request.getEmail();
-//        customerEntity.balance = request.getBalance();
-//        CustomerEntity.persistCustomer(customerEntity);
-//
-//        responseObserver.onCompleted();
-//    }
     @Override
     @Blocking
     @Transactional

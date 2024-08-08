@@ -15,30 +15,19 @@ import jakarta.validation.constraints.NotNull;
 import io.smallrye.mutiny.Uni;
 
 /**
- * Example JPA entity defined as a Panache Entity.
- * An ID field of Long type is provided, if you want to define your own ID field
- * extends <code>PanacheEntityBase</code> instead.
  *
- * This uses the active record pattern, you can also use the repository pattern
- * instead:
- * .
- *
- * Usage (more example on the documentation)
- *
- * {@code
- *     public void doSomething() {
- *         MyEntity entity1 = new MyEntity();
- *         entity1.field = "field-1";
- *         entity1.persist();
- *
- *         List<MyEntity> entities = MyEntity.listAll();
- * }
- * }
+ * .This is the Order Object for the Report Service. It is reactive and consists of
+ * and Order ID, Customer ID, and Purchase ID and Amount all received from the Purchase Service.
+ * The OrderProcessor sets the time of the transaction, records it in Postgres, and returns the object.
  */
 
 @Table(name = "orders", schema = "public")
 @Entity(name = "orders")
 public class Order extends PanacheEntity {
+
+    @Column(name = "order_id")
+    @NotBlank(message = "Order Id may not be blank")
+    public String orderId;
 
     @Column(name = "customer_id")
     @NotBlank(message = "Customer Id may not be blank")

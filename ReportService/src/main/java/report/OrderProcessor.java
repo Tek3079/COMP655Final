@@ -17,18 +17,16 @@ import org.jboss.resteasy.reactive.RestResponse;
 
 /**
  * A bean consuming data from the "order-request" RabbitMQ queue and responding
- * with whether the proper list.
+ * with the Order Object.
  * The result is pushed to the "order-response" RabbitMQ exchange.
  */
 @ApplicationScoped
 public class OrderProcessor {
 
-    @Inject
-    Mutiny.SessionFactory sf;
     /**
      *
      * @param orderRequest to be saved
-     * @return String with the id
+     * @return An Order object
      */
     @Incoming("order-request")
     @Outgoing("order-response")

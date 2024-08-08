@@ -14,12 +14,20 @@ import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.jboss.resteasy.reactive.RestPath;
 import org.jboss.resteasy.reactive.RestResponse;
-import org.hibernate.reactive.mutiny.Mutiny;
 
+
+/**
+ * The Report Resource is the Reactive HTTP Endpoints returning Order information for reporting purposes.
+ */
 @Path("/orders")
 @Tag(name = "Report Resource", description = "API for managing students")
 public class ReportResource {
 
+
+    /**
+     *
+     * @return Returns a List of all of the Orders
+     */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Get all orders", description = "Retrieves all orders in the system")
@@ -27,6 +35,11 @@ public class ReportResource {
         return Order.findAllOrders();
     }
 
+    /**
+     *
+     * @param id The ID of the order trying to be retrieved
+     * @return Order the Order with that ID
+     */
     @GET
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -38,8 +51,8 @@ public class ReportResource {
     }
 
     /**
-     * An Endpoint that deletes a student from the database if it exists.
-     * @param id The id of the student to be deleted
+     * An Endpoint that deletes an Order from the database if it exists.
+     * @param id The id of the Order to be deleted
      * @return Response a 204 response indicating it completed or a 404 if not found.
      */
     @DELETE
